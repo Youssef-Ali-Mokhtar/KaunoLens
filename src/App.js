@@ -13,7 +13,7 @@ export default function App() {
         <Route path="/KaunoLens/home" element={<HomeScreen />} />
         <Route path="/KaunoLens/history" element={<History />} />
         <Route path="/KaunoLens/camera" element={<CameraScreen />} />
-        <Route path="/upload" element={<UploadScreen />} />
+        <Route path="/KaunoLens/upload" element={<UploadScreen />} />
       </Routes>
     </Router>
   );
