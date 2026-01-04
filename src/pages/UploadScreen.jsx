@@ -6,7 +6,10 @@ import { compressImage } from "../utils/imageCompression"; // ✅ add this
 export default function UploadScreen() {
   const fileInputRef = useRef(null);
 
-  const [photo, setPhoto] = useState(null); // will store compressed base64
+  const [photo, setPhoto] = useState(null); // preview base64 (original)
+  const [historyPhoto, setHistoryPhoto] = useState(null); // compressed base64 (history)
+  const [selectedFile, setSelectedFile] = useState(null); // ✅ real File for multipart upload
+
   const [failed, setFailed] = useState(false);
   const [building, setBuilding] = useState(null);
   const [localizing, setLocalizing] = useState(false);
@@ -31,22 +34,33 @@ export default function UploadScreen() {
     try {
       setFailed(false);
 
-      // ✅ Compress before saving to state/localStorage/history
-      const compressedBase64 = await compressImage(file, {
-        maxWidth: 800,
-        quality: 0.5,
-        outputType: "image/jpeg",
-      });
+      // ✅ keep the real file for multipart/form-data upload
+      setSelectedFile(file);
 
-      setPhoto(compressedBase64);
+      // ✅ read ORIGINAL base64 for preview only
+      const reader = new FileReader();
+      reader.onload = async () => {
+        setPhoto(reader.result);
+
+        // ✅ compress ONLY for history/localStorage
+        const compressedBase64 = await compressImage(file, {
+          maxWidth: 800,
+          quality: 0.5,
+          outputType: "image/jpeg",
+        });
+        setHistoryPhoto(compressedBase64);
+      };
+      reader.readAsDataURL(file);
     } catch (err) {
-      console.error("Upload/compress failed:", err);
+      console.error("Upload/read/compress failed:", err);
       setFailed(true);
     }
   };
 
   const reupload = () => {
     setPhoto(null);
+    setHistoryPhoto(null);
+    setSelectedFile(null);
     setFailed(false);
     setBuilding(null);
     setLocalizing(false);
@@ -62,12 +76,26 @@ export default function UploadScreen() {
       setFailed(false);
       setLocalizing(true);
 
-      const response = await fetch("http://localhost:8000/localize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // ✅ photo is already compressed base64
-        body: JSON.stringify({ image: photo }),
-      });
+      if (!selectedFile) {
+        throw new Error("No file selected");
+      }
+
+      // ✅ multipart/form-data
+      const formData = new FormData();
+
+      // IMPORTANT: field name must match what backend expects.
+      // Common names: "file", "image", "photo"
+      // Ask your backend dev what the exact key is.
+      formData.append("file", selectedFile);
+
+      const response = await fetch(
+        "http://backend-app-195583977.spaincentral.azurecontainer.io:8080/api/photo/upload",
+        {
+          method: "POST",
+          body: formData,
+          // ✅ DO NOT set Content-Type manually for FormData
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Localization failed");
@@ -77,13 +105,15 @@ export default function UploadScreen() {
 
       setBuilding(data.detectedObject || null);
 
-      // ✅ Save compressed thumbnail to history (much smaller)
-      saveToHistory(photo, {
-        latitude: data.latitude,
-        longitude: data.longitude,
-      },
-      data.detectedObject
-    );
+      // ✅ Save COMPRESSED image to history
+      saveToHistory(
+        historyPhoto || photo,
+        {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+        data.detectedObject
+      );
 
       if (data?.latitude && data?.longitude) {
         window.open(

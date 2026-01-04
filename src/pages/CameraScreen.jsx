@@ -7,7 +7,10 @@ export default function CameraScreen() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const [photo, setPhoto] = useState(null); // will store compressed base64
+  const [photo, setPhoto] = useState(null); // ✅ RAW base64 for preview only (not compressed)
+  const [historyPhoto, setHistoryPhoto] = useState(null); // ✅ COMPRESSED base64 for history only
+  const [captureFile, setCaptureFile] = useState(null); // ✅ RAW File for multipart upload (not compressed)
+
   const [stream, setStream] = useState(null);
   const [failed, setFailed] = useState(false);
   const [building, setBuilding] = useState(null);
@@ -62,7 +65,7 @@ export default function CameraScreen() {
      Capture / Retake
   ========================= */
 
-  // Helper: convert dataURL -> File (so we can reuse compressImage(file))
+  // Helper: convert dataURL -> File (so we can upload multipart)
   const dataURLtoFile = (dataUrl, filename = "capture.png") => {
     const arr = dataUrl.split(",");
     const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
@@ -77,6 +80,8 @@ export default function CameraScreen() {
     if (!videoRef.current || !canvasRef.current) return;
 
     try {
+      setFailed(false);
+
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
@@ -85,19 +90,21 @@ export default function CameraScreen() {
 
       canvas.getContext("2d").drawImage(video, 0, 0);
 
-      // Capture as base64 (raw)
+      // ✅ RAW capture for preview (NOT compressed)
       const rawDataUrl = canvas.toDataURL("image/png");
+      setPhoto(rawDataUrl);
 
-      // Convert to File -> compress -> store compressed base64
-      const file = dataURLtoFile(rawDataUrl, "capture.png");
+      // ✅ RAW File for server upload (NOT compressed)
+      const rawFile = dataURLtoFile(rawDataUrl, "capture.png");
+      setCaptureFile(rawFile);
 
-      const compressedBase64 = await compressImage(file, {
+      // ✅ Compress ONLY for history/localStorage
+      const compressedBase64 = await compressImage(rawFile, {
         maxWidth: 800,
         quality: 0.5,
         outputType: "image/jpeg",
       });
-
-      setPhoto(compressedBase64);
+      setHistoryPhoto(compressedBase64);
     } catch (err) {
       console.error("Capture/compress failed:", err);
       setFailed(true);
@@ -106,6 +113,8 @@ export default function CameraScreen() {
 
   const retakePhoto = () => {
     setPhoto(null);
+    setHistoryPhoto(null);
+    setCaptureFile(null);
     setFailed(false);
     setBuilding(null);
     setLocalizing(false);
@@ -120,14 +129,24 @@ export default function CameraScreen() {
       setFailed(false);
       setLocalizing(true);
 
-      const response = await fetch("http://localhost:8000/localize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // ✅ photo is already compressed base64
-        body: JSON.stringify({ image: photo }),
-      });
+      if (!captureFile) {
+        throw new Error("No captured file available");
+      }
+
+      // ✅ multipart/form-data upload of RAW file (NOT compressed)
+      const formData = new FormData();
+
+      // IMPORTANT: field name must match backend expectation (commonly "file")
+      formData.append("file", captureFile);
+
+      const response = await fetch(
+        "http://backend-app-195583977.spaincentral.azurecontainer.io:8080/api/photo/upload",
+        {
+          method: "POST",
+          body: formData,
+          // ✅ DO NOT set Content-Type for FormData
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Localization failed");
@@ -137,13 +156,15 @@ export default function CameraScreen() {
 
       setBuilding(data.detectedObject || null);
 
-      // ✅ save compressed thumbnail to history (much smaller localStorage)
-      saveToHistory(photo, {
-        latitude: data.latitude,
-        longitude: data.longitude,
-      },
-      data.detectedObject
-    );
+      // ✅ save COMPRESSED thumbnail to history (much smaller localStorage)
+      saveToHistory(
+        historyPhoto || photo, // fallback if compression isn't ready
+        {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+        data.detectedObject
+      );
 
       if (data?.latitude && data?.longitude) {
         window.open(
@@ -243,9 +264,9 @@ export default function CameraScreen() {
         <div
           style={{
             position: "absolute",
-            bottom: "90px",                 // ✅ moved up
+            bottom: "90px",
             left: "50%",
-            transform: "translateX(-50%)",  // keep centered
+            transform: "translateX(-50%)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -253,7 +274,7 @@ export default function CameraScreen() {
           }}
         >
           <img
-            src={photo}
+            src={photo} // ✅ preview RAW capture
             alt="preview"
             style={{
               width: "280px",
