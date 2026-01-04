@@ -310,7 +310,7 @@ export default function CameraScreen() {
               </div>
 
               <button
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/KaunoLens/home")}
                 style={{
                   padding: "10px 18px",
                   background: "#2563eb",

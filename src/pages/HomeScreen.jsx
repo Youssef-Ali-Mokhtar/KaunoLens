@@ -52,7 +52,7 @@ export default function HomeScreen() {
         <motion.button
           className="action-btn btn-blue"
           variants={item}
-          onClick={() => navigate("/camera")}
+          onClick={() => navigate("/KaunoLens/camera")}
         >
           📷 Take a Photo
         </motion.button>
@@ -60,7 +60,7 @@ export default function HomeScreen() {
         <motion.button
           className="action-btn btn-green"
           variants={item}
-          onClick={() => navigate("/upload")}
+          onClick={() => navigate("/KaunoLens/upload")}
         >
           ⬆️ Upload a Photo
         </motion.button>
@@ -68,7 +68,7 @@ export default function HomeScreen() {
         <motion.button
           className="action-btn btn-gray"
           variants={item}
-          onClick={() => navigate("/history")}
+          onClick={() => navigate("/KaunoLens/history")}
         >
           📁 View History
         </motion.button>

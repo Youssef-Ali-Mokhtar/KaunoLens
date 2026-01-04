@@ -10,9 +10,9 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/KaunoLens" element={<SplashScreen />} />
-        <Route path="/home" element={<HomeScreen />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/camera" element={<CameraScreen />} />
+        <Route path="/KaunoLens/home" element={<HomeScreen />} />
+        <Route path="/KaunoLens/history" element={<History />} />
+        <Route path="/KaunoLens/camera" element={<CameraScreen />} />
         <Route path="/upload" element={<UploadScreen />} />
       </Routes>
     </Router>
