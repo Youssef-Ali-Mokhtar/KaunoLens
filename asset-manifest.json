@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/KaunoLens/static/css/main.24b7f84e.css",
-    "main.js": "/KaunoLens/static/js/main.1d1c0d9b.js",
+    "main.js": "/KaunoLens/static/js/main.8920b433.js",
     "index.html": "/KaunoLens/index.html",
     "main.24b7f84e.css.map": "/KaunoLens/static/css/main.24b7f84e.css.map",
-    "main.1d1c0d9b.js.map": "/KaunoLens/static/js/main.1d1c0d9b.js.map"
+    "main.8920b433.js.map": "/KaunoLens/static/js/main.8920b433.js.map"
   },
   "entrypoints": [
     "static/css/main.24b7f84e.css",
-    "static/js/main.1d1c0d9b.js"
+    "static/js/main.8920b433.js"
   ]
 }
