@@ -140,7 +140,7 @@ export default function CameraScreen() {
       formData.append("file", captureFile);
 
       const response = await fetch(
-        "http://backend-app-195583977.spaincentral.azurecontainer.io:8080/api/photo/upload",
+        "https://backend-app-564677522.spaincentral.azurecontainer.io:8443/api/photo/upload",
         {
           method: "POST",
           body: formData,
