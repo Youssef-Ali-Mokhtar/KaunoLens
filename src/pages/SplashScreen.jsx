@@ -9,7 +9,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      navigate("/KaunoLens/home");
+      navigate("/home");
     }, 3000);
 
     return () => clearTimeout(t);

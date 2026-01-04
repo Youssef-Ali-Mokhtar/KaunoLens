@@ -7,13 +7,13 @@ import UploadScreen from "./pages/UploadScreen";
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/KaunoLens">
       <Routes>
-        <Route path="/KaunoLens" element={<SplashScreen />} />
-        <Route path="/KaunoLens/home" element={<HomeScreen />} />
-        <Route path="/KaunoLens/history" element={<History />} />
-        <Route path="/KaunoLens/camera" element={<CameraScreen />} />
-        <Route path="/KaunoLens/upload" element={<UploadScreen />} />
+        <Route path="/" element={<SplashScreen />} />
+        <Route path="/home" element={<HomeScreen />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/camera" element={<CameraScreen />} />
+        <Route path="/upload" element={<UploadScreen />} />
       </Routes>
     </Router>
   );
