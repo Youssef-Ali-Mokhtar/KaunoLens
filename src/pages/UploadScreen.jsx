@@ -93,7 +93,6 @@ export default function UploadScreen() {
         {
           method: "POST",
           body: formData,
-          // ✅ DO NOT set Content-Type manually for FormData
         }
       );
 
