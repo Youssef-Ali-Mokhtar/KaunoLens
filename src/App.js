@@ -9,7 +9,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<SplashScreen />} />
+        <Route path="/KaunoLens" element={<SplashScreen />} />
         <Route path="/home" element={<HomeScreen />} />
         <Route path="/history" element={<History />} />
         <Route path="/camera" element={<CameraScreen />} />
